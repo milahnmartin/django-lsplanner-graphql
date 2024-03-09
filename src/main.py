@@ -9,6 +9,5 @@ def index():
     return {"message": "Hello, World!"}
 
 
-if __name__ == "__main__":
-    app.include_router(user.router)
-    app.include_router(quota.router)
+app.include_router(user.router)
+app.include_router(quota.router)

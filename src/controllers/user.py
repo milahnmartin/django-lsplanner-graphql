@@ -6,7 +6,7 @@ from src.config import get_db
 
 
 def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
-    user = User(**user_data.dict())
+    user = User(**user_data.model_dump())
     db.add(user)
     db.commit()
     db.refresh(user)

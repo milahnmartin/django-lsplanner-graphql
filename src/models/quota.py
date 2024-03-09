@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, DateTime
 from .base import Base
-from pydantic import BaseModel
 
 
 class Quota(Base):
@@ -12,13 +11,5 @@ class Quota(Base):
     current_count = Column(Integer)
     max_count = Column(Integer)
 
-
-class QuotaOut(BaseModel):
-    id: int
-    date_created: DateTime
-    date_updated: DateTime
-    current_count: int
-    max_count: int
-
     class Config:
-        orm_mode = True
+        arbitrary_types_allowed = True

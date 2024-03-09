@@ -6,7 +6,7 @@ from src.config import get_db
 
 
 def create_quota(quota_data: QuotaCreate, db: Session = Depends(get_db)):
-    quota = Quota(**quota_data.dict())
+    quota = Quota(**quota_data.model_dump())
     db.add(quota)
     db.commit()
     db.refresh(quota)
