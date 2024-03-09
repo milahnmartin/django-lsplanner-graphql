@@ -1,25 +1,28 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  main:
+  postgres:
+    container_name: lsplanner-postgres
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: lsplanner
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+
+  redis:
+    container_name: lsplanner-redis
+    image: redis:latest
+    restart: always
+
+  fastapi:
+    container_name: lsplanner-fastapi-service
     build: .
     ports:
-      - "5000:5000"
-    environment:
-      - DJANGO_ENV=development
-      - DJANGO_SETTINGS_MODULE=service.settings.development
-    volumes:
-      - .:/app
+      - "8000:8000"
     depends_on:
-      - db
-  db:
-    image: postgres:latest-alpine
+      - postgres
+      - redis
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-    ports:
-      - "5432:5432"
-  cache:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
+      - DATABASE_URL=postgresql://lsplanner:lsplanner@postgres:5432/lsplanner
+      - REDIS_URL=redis://redis:6379/0

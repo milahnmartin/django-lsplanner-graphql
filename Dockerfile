@@ -1,42 +1,18 @@
-FROM python:3.11
+FROM python:3.12-slim
 
-RUN apt-get update && apt-get install -y
-RUN apt-get install chromium vim -y
+WORKDIR /app
 
-WORKDIR /usr/src/app
+# Copy just the requirements file first to leverage Docker layer caching
+COPY ./requirements.txt .
 
-ARG GIT_COMMIT_SHA
-ARG GIT_COMMIT_SHORT_SHA
-ARG PIP_EXTRA_INDEX_URL
-ARG STAGE
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Declare container user variables
-ARG CONTAINER_USER_NAME=yocoreseller
+# Copy the rest of the application code
+COPY ./src .
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV GIT_COMMIT_SHA=${GIT_COMMIT_SHA}
-ENV GIT_COMMIT_SHORT_SHA=${GIT_COMMIT_SHORT_SHA}
-ENV STAGE=${STAGE}
-ENV PIP_EXTRA_INDEX_URL=${PIP_EXTRA_INDEX_URL}
+# Expose the port the FastAPI application runs on
+EXPOSE 8000
 
-RUN pip install pip-tools
-
-COPY . /usr/src/app/
-
-RUN set -x \
-    # create yocoreseller user/group first, to be consistent throughout docker variants
-    && addgroup --system ${CONTAINER_USER_NAME} || true \
-    && adduser --system --disabled-login --ingroup ${CONTAINER_USER_NAME} --home /home/${CONTAINER_USER_NAME} --gecos "${CONTAINER_USER_NAME} user" --shell /bin/false  ${CONTAINER_USER_NAME} || true
-
-RUN if [ "$STAGE" = "dev" -o "$STAGE" = "local" ]; \
-    then pip-sync --extra-index-url $PIP_EXTRA_INDEX_URL requirements.txt dev-requirements.txt --pip-args "--no-cache-dir"; \
-    else pip-sync --extra-index-url $PIP_EXTRA_INDEX_URL requirements.txt --pip-args "--no-cache-dir"; \
-    fi
-
-
-RUN python /usr/src/app/src/manage.py collectstatic --no-input
-
-USER $CONTAINER_USER_NAME
-
-CMD [ "python", "src/manage.py", "runserver", "0.0.0.0:8000" ]
+# Command to run the FastAPI application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
