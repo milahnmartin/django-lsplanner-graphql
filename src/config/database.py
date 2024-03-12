@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
 
-# Define the database URL (replace with your actual database URL)
-DATABASE_URL = "postgresql://lsplanner:lsplanner@localhost/lsplanner"
 
-# Create a SQLAlchemy engine
+
+DATABASE_URL = os.getenv("DB_URL") if os.getenv("DB_URL") else "postgresql://lsplanner:lsplanner@localhost/lsplanner"
+
 engine = create_engine(DATABASE_URL)
 
-# Create a session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
